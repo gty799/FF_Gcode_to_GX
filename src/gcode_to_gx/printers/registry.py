@@ -16,6 +16,8 @@ class PrinterProfile:
     dual: bool
     # Flashforge: 0 = single, 1 = dual (independent / IDEX-style)
     multi_extruder_type: int
+    # The final two bytes of the 58-byte GX header vary by firmware.
+    header_marker: int = 1
 
 
 _PROFILES: dict[str, PrinterProfile] = {
@@ -42,6 +44,14 @@ _PROFILES: dict[str, PrinterProfile] = {
         name="Flashforge Creator 3 Pro",
         dual=True,
         multi_extruder_type=1,
+    ),
+    "creatorpro2": PrinterProfile(
+        id="creatorpro2",
+        name="Flashforge Creator Pro 2",
+        dual=True,
+        # Captured from a working Creator Pro 2 FlashPrint GX file.
+        multi_extruder_type=1,
+        header_marker=0x0707,
     ),
     "generic_single": PrinterProfile(
         id="generic_single",

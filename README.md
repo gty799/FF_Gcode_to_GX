@@ -14,10 +14,13 @@ Supports single- and dual-extruder Flashforge printers (see profiles below). The
 | `adventurer4` | Adventurer 4 | single |
 | `adventurer5m` | Adventurer 5M | single |
 | `creator3pro` | Creator 3 Pro | dual |
+| `creatorpro2` | Creator Pro 2 | right, left, or normal dual |
 | `generic_single` | Generic Flashforge | single |
 | `generic_dual` | Generic Flashforge | dual |
 
-`.gx` layout is shared: 58-byte header + 14454-byte BMP, G-code starting at offset 14512. The profile sets `multi_extruder_type` and dual/single metadata.
+`.gx` layout is shared: 58-byte header + 14454-byte BMP, G-code starting at offset 14512. The profile sets the printer-specific header fields and dual/single metadata. The Creator Pro 2 profile uses mode `1` and final header bytes `07 07`, matching the user's existing export script, which was calibrated against a working FlashPrint capture. Their Orca preset maps extruder index 0 to physical left/T1 and index 1 to physical right/T0.
+
+For Creator Pro 2 setup and limitations, see [the Creator Pro 2 guide](profiles/creatorpro2/README.md). Select this profile explicitly; auto-detection cannot identify a printer model from the number of extruders.
 
 ### Choosing a profile
 
@@ -31,6 +34,7 @@ Examples:
 
 ```bash
 gcode_to_gx --printer creator3pro /path/to/file.gcode
+gcode_to_gx --printer creatorpro2 /path/to/file.gcode
 gcode_to_gx -p adventurer5m /path/to/file.gcode
 
 # Windows (PowerShell)

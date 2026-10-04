@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import struct
 from dataclasses import dataclass
@@ -43,7 +44,7 @@ def build_header(meta: PrintMetadata) -> bytes:
         meta.multi_extruder_type,
     )
     buff += struct.pack(
-        "<8h",
+        "<7hH",
         meta.layer_height_um,
         0,
         meta.perimeter_shells,
@@ -51,7 +52,7 @@ def build_header(meta: PrintMetadata) -> bytes:
         meta.bed_temp,
         meta.nozzle_right,
         meta.nozzle_left,
-        1,
+        meta.header_marker,
     )
     if len(buff) != GX_HEADER_SIZE:
         raise RuntimeError(f"Header size {len(buff)} != {GX_HEADER_SIZE}")
@@ -80,7 +81,7 @@ def parse_header(data: bytes) -> GxHeader:
         noz_r,
         noz_l,
         reserved1,
-    ) = struct.unpack_from("<8h", data, 42)
+    ) = struct.unpack_from("<7hH", data, 42)
     return GxHeader(
         print_time=print_time,
         filament_right_mm=fil_r,
@@ -117,6 +118,11 @@ def convert_file(path: str, printer_id: str | None = None) -> PrinterProfile:
         raise ValueError(f"Empty or unreadable file: {path}")
 
     profile = resolve_profile(printer_id, lines=lines)
+    if profile.id == "creatorpro2" and _creatorpro2_parallel_mode(lines):
+        raise ValueError(
+            "Creator Pro 2 mirror/duplicate mode is not supported: "
+            "it needs a different GX header and a calibration pad."
+        )
     meta = extract_metadata(lines, profile=profile)
     bmp = extract_thumbnail_bmp(lines)
     gcode_text = "".join(lines)
@@ -129,3 +135,13 @@ def convert_file(path: str, printer_id: str | None = None) -> PrinterProfile:
     if os.path.exists(temp_path):
         os.remove(temp_path)
     return profile
+
+
+def _creatorpro2_parallel_mode(lines: list[str]) -> bool:
+    for line in lines:
+        command = line.split(";", 1)[0].strip().upper()
+        if re.match(r"^M109\s+T[12](?:\s|$)", command):
+            return True
+        if re.match(r"^M118\b", command) and re.search(r"\bD[12]\b", command):
+            return True
+    return False

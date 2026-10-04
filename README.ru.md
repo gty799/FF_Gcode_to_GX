@@ -14,10 +14,13 @@
 | `adventurer4` | Adventurer 4 | single |
 | `adventurer5m` | Adventurer 5M | single |
 | `creator3pro` | Creator 3 Pro | dual |
+| `creatorpro2` | Creator Pro 2 | правая, левая или обычная двухголовая печать |
 | `generic_single` | Generic Flashforge | single |
 | `generic_dual` | Generic Flashforge | dual |
 
-Разметка `.gx` общая: шапка 58 байт + BMP 14454 байт, G-code с offset 14512. Профиль задаёт `multi_extruder_type` и dual/single metadata.
+Разметка `.gx` общая: шапка 58 байт + BMP 14454 байт, G-code с offset 14512. Профиль задаёт поля шапки и метаданные головок. Профиль Creator Pro 2 использует режим `1` и последние байты `07 07` — как в вашем скрипте экспорта, который был настроен по рабочему файлу FlashPrint. В присланном профиле Orca индекс экструдера 0 соответствует левой головке T1, а индекс 1 — правой T0.
+
+Настройка и ограничения для Creator Pro 2 описаны в [отдельной инструкции](profiles/creatorpro2/README.ru.md). Укажите профиль явно: по числу экструдеров невозможно определить модель принтера.
 
 ### Выбор профиля
 
@@ -31,6 +34,7 @@
 
 ```bash
 gcode_to_gx --printer creator3pro /path/to/file.gcode
+gcode_to_gx --printer creatorpro2 /path/to/file.gcode
 gcode_to_gx -p adventurer5m /path/to/file.gcode
 
 # Windows (PowerShell)
